@@ -1,116 +1,203 @@
-# Sentiment Analysis Using Deep Learning
+# 🎬 Sentiment Classification of Movie Reviews
+### Using Bidirectional LSTM and Natural Language Processing
 
-This project performs binary sentiment classification on movie reviews using deep learning models built with TensorFlow and Keras. The goal is to predict whether a review is **positive** or **negative** using the IMDb movie review dataset.
+---
 
-## Project Overview
+## 📌 Project Overview
 
-The project explores text preprocessing, vectorization, model training, evaluation, and prediction for sentiment analysis. Two notebook versions are included:
+This project builds a deep learning model that automatically classifies movie reviews as **Positive** or **Negative** using Natural Language Processing (NLP) and a Bidirectional LSTM neural network.
 
-- `main.ipynb` contains the earlier workflow and an LSTM-based model.
-- `main2.ipynb` contains a cleaner and improved pipeline with saved plots, confusion matrix, and model export.
+- **Dataset** — IMDb Large Movie Review Dataset (50,000 reviews)
+- **Framework** — TensorFlow / Keras (Python)
+- **Model** — Bidirectional LSTM
+- **Test Accuracy** — 83.52%
 
-## Dataset
+---
 
-The project uses the **IMDb ACL dataset** stored locally in the `aclImdb/` folder.
+## 📁 Project Structure
 
-- Training data and testing data are loaded from directory structure
-- Reviews are labeled as positive or negative
-- Text data is converted into numeric form before being passed to the model
+```
+project/
+│
+├── sentiment_analysis_imdb.ipynb     ← Main notebook (training + evaluation)
+├── predict.py                        ← Run this for live predictions (no retraining)
+│
+├── sentiment_model.keras             ← Saved trained model (auto-generated)
+├── vectorizer_vocab.pkl              ← Saved vocabulary (auto-generated)
+│
+├── training_curves.png               ← Accuracy & loss plots (auto-generated)
+├── confusion_matrix.png              ← Confusion matrix (auto-generated)
+├── model_architecture.png            ← Model layer diagram (auto-generated)
+├── review_length_distribution.png    ← Review length histogram (auto-generated)
+│
+├── aclImdb/                          ← IMDb dataset folder
+│   ├── train/
+│   │   ├── pos/                      ← 12,500 positive reviews
+│   │   └── neg/                      ← 12,500 negative reviews
+│   └── test/
+│       ├── pos/                      ← 12,500 positive reviews
+│       └── neg/                      ← 12,500 negative reviews
+│
+└── README.md                         ← This file
+```
 
-## Models Used
+> ⚠️ The `unsup/` folder inside `aclImdb/train/` must be deleted before running.
+> It contains unlabeled data and creates a 3rd class which breaks binary classification.
 
-### 1. LSTM-based model (`main.ipynb`)
+---
 
-This notebook includes:
+## ⚙️ Setup Instructions
 
-- Text vectorization with `TextVectorization`
-- Embedding layer
-- LSTM-based sentiment classifier
-- A second deeper LSTM experiment with dropout
-- Manual prediction on custom reviews
-- Confusion matrix and classification report
+### Step 1 — Create virtual environment
+```bash
+python -m venv venv
+```
 
-One recorded test result from this notebook is approximately **78.46% accuracy**.
+### Step 2 — Activate virtual environment
 
-### 2. Deep learning text classifier (`main2.ipynb`)
+**Windows:**
+```bash
+venv\Scripts\activate
+```
 
-This notebook includes:
+**Mac / Linux:**
+```bash
+source venv/bin/activate
+```
 
-- Dataset loading with `text_dataset_from_directory`
-- Vocabulary building and text vectorization
-- Embedding layer
-- Global average pooling
-- Dense classification layers
-- Training and validation curves
-- Confusion matrix and classification report
-- Export and saving of the trained model
+### Step 3 — Install dependencies
+```bash
+pip install tensorflow notebook ipykernel matplotlib scikit-learn seaborn
+```
 
-One recorded test result from this notebook is **84.00% accuracy**.
+### Step 4 — Download the dataset
+Download the IMDb dataset from:
+https://ai.stanford.edu/~amaas/data/sentiment/
 
-## Project Files
+Extract it so the folder structure looks like `aclImdb/train/pos/`, `aclImdb/train/neg/` etc.
+Delete the `aclImdb/train/unsup/` folder before running.
 
-- `main.ipynb` - initial notebook with LSTM-based sentiment analysis
-- `main2.ipynb` - improved notebook with cleaner training and evaluation pipeline
-- `sentiment_model.keras` - saved trained model
-- `training_curves.png` - plot of accuracy and loss over epochs
-- `confusion_matrix.png` - confusion matrix generated on the test set
-- `Deep Learning Project.pptx` - project presentation
+---
 
-## Tech Stack
+## 🚀 How to Run
+
+### Option A — Train the model (first time only)
+
+Open and run all cells in:
+```
+sentiment_analysis_imdb.ipynb
+```
+
+This will:
+- Load and preprocess the dataset
+- Analyse review length distribution
+- Build and train the Bidirectional LSTM model
+- Evaluate on test set and print accuracy
+- Save all plots as PNG files
+- Save the trained model as `sentiment_model.keras`
+- Save the vocabulary as `vectorizer_vocab.pkl`
+- Launch interactive prediction at the end
+
+**Expected training time:** 10-15 minutes (CPU)
+
+---
+
+### Option B — Run predictions only (no retraining)
+
+Once the model is trained and saved, use this for live demos:
+
+```bash
+python predict.py
+```
+
+Loads in 3-4 seconds. Type any movie review and get instant results:
+
+```
+Enter a movie review (or type 'quit' to exit):
+> This movie was absolutely fantastic!
+
+Review    : This movie was absolutely fantastic!...
+Sentiment : POSITIVE
+Confidence: 94.3%
+Raw Score : 0.9430
+```
+
+Type `quit` to exit.
+
+---
+
+## 🧠 Model Architecture
+
+| Layer | Configuration | Purpose |
+|---|---|---|
+| Embedding | Vocab=20001, dim=32 | Word → dense vector |
+| SpatialDropout1D | Rate=0.3 | Regularisation |
+| Bidirectional LSTM | Units=64, return_seq=True | Forward + backward context |
+| Bidirectional LSTM | Units=32 | Sequence summary |
+| Dense | Units=64, ReLU | Feature learning |
+| Dropout | Rate=0.5 | Regularisation |
+| Dense (Output) | Units=1, Sigmoid | 0.0–1.0 probability |
+
+---
+
+## 📊 Results
+
+| Metric | Value |
+|---|---|
+| Test Accuracy | 83.52% |
+| Test Loss | 0.3965 |
+| Positive F1-Score | 0.84 |
+| Negative F1-Score | 0.83 |
+
+---
+
+## 🔧 Key Hyperparameters
+
+| Parameter | Value |
+|---|---|
+| MAX_TOKENS | 20,000 |
+| SEQUENCE_LEN | 250 |
+| EMBEDDING_DIM | 32 |
+| BATCH_SIZE | 32 |
+| EPOCHS | 20 (with early stopping) |
+| Early Stopping Patience | 5 |
+| Optimizer | Adam (lr=0.001) |
+| Loss Function | Binary Cross-Entropy |
+
+---
+
+## 📦 Requirements
 
 - Python 3.11
-- TensorFlow / Keras
+- TensorFlow 2.x
+- Keras
 - NumPy
 - Matplotlib
+- Scikit-learn
 - Seaborn
-- scikit-learn
 
-## How to Run
+---
 
-1. Create and activate a virtual environment.
-2. Install the required packages.
-3. Open the notebooks and run the cells in order.
+## ⚠️ Known Limitations
 
-Example package installation:
+- Model struggles with **double negatives** (e.g. "not bad" classified as negative)
+- Reviews longer than 250 words are **truncated** (affects 30% of dataset)
+- Trained only on movie reviews — may not generalise to other domains
+- Sarcasm and mixed-sentiment reviews may be misclassified
 
-```bash
-pip install tensorflow==2.15 numpy matplotlib seaborn scikit-learn jupyter
-```
+---
 
-To start Jupyter:
+## 🔮 Future Improvements
 
-```bash
-jupyter notebook
-```
+- Use pre-trained GloVe or FastText embeddings
+- Fine-tune BERT for 93%+ accuracy
+- Add negation preprocessing
+- Deploy as a web app using FastAPI + HTML frontend
 
-## Output
+---
 
-The project produces:
+## 👨‍💻 Author
 
-- sentiment predictions for movie reviews
-- model performance metrics
-- training and validation plots
-- confusion matrix for classification analysis
-- a saved `.keras` model for reuse
-
-## Learning Outcomes
-
-This project demonstrates:
-
-- text preprocessing for deep learning
-- vectorization of natural language data
-- training neural networks for NLP tasks
-- comparing model performance
-- evaluating classification models with more than just accuracy
-
-## Future Improvements
-
-- try Bidirectional LSTM or GRU models
-- tune sequence length and vocabulary size
-- add early stopping and model checkpointing
-- convert notebook code into reusable Python scripts
-- deploy the model with a simple web app
-
-## Author
-
-Deep Learning project on sentiment analysis using the IMDb dataset.
+**Project:** Deep Learning — Semester 6
+**Model:** Bidirectional LSTM Sentiment Classifier
+**Tools:** Python, TensorFlow, Keras, IMDb Dataset
